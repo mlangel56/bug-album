@@ -1,3 +1,5 @@
+Python
+
 import datetime
 import streamlit as st
 from supabase import Client, create_client
@@ -91,7 +93,7 @@ if page == "➕ Add New Bug":
                     # 2. Retrieve Public Image URL
                     image_url = supabase.storage.from_("bug-photos").get_public_url(file_path)
 
-                    # 3. Save details to database (date converted to string YYYY-MM-DD format)
+                    # 3. Save details to database
                     supabase.table("bugs").insert({
                         "name": name,
                         "species": species,
@@ -102,6 +104,7 @@ if page == "➕ Add New Bug":
                     }).execute()
 
                     st.success(f"🌱 '{name}' has been added to your field guide!")
+                    st.rerun()
                 except Exception as e:
                     st.error(f"Error saving entry: {e}")
             else:
@@ -149,3 +152,42 @@ elif page == "📖 Table of Contents":
             if selected_bug.get("notes")
             else "No notes added."
         )
+
+        st.divider()
+
+        # ---------------- EDIT ENTRY SECTION ----------------
+        with st.expander("✏️ Edit This Entry"):
+            with st.form("edit_bug_form"):
+                edit_name = st.text_input("Bug Common Name", value=selected_bug.get("name", ""))
+                edit_species = st.text_input("Scientific Name", value=selected_bug.get("species", ""))
+                
+                # Pre-select existing category index
+                cat_options = ["Butterfly/Moth 🦋", "Beetle 🐞", "Bee/Wasp 🐝", "Spider 🕷️", "Other 🌿"]
+                current_cat = selected_bug.get("category", cat_options[0])
+                cat_index = cat_options.index(current_cat) if current_cat in cat_options else 0
+                edit_category = st.selectbox("Category", cat_options, index=cat_index)
+
+                # Pre-fill date
+                existing_date = selected_bug.get("date_spotted")
+                default_date = datetime.datetime.strptime(existing_date, "%Y-%m-%d").date() if existing_date else datetime.date.today()
+                edit_date = st.date_input("Date First Spotted 📅", value=default_date)
+
+                edit_notes = st.text_area("Field Notes", value=selected_bug.get("notes", ""))
+
+                update_submitted = st.form_submit_button("💾 Save Changes")
+
+                if update_submitted:
+                    try:
+                        # Update entry in Supabase database by ID
+                        supabase.table("bugs").update({
+                            "name": edit_name,
+                            "species": edit_species,
+                            "category": edit_category,
+                            "date_spotted": str(edit_date),
+                            "notes": edit_notes,
+                        }).eq("id", selected_bug["id"]).execute()
+
+                        st.success("Entry updated successfully!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error updating entry: {e}")
