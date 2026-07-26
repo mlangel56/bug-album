@@ -1,5 +1,3 @@
-Python
-
 import datetime
 import streamlit as st
 from supabase import Client, create_client
