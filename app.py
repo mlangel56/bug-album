@@ -4,7 +4,7 @@ from supabase import Client, create_client
 
 # Page Configuration
 st.set_page_config(
-    page_title="My Field Guide",
+    page_title="Bugpedia",
     page_icon="🪲",
     layout="centered"
 )
@@ -38,7 +38,7 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # App Header
-st.title("🌿 My Bug Field Journal 🪲")
+st.title("🌿 Bugpedia 🪲")
 st.caption("A cottagecore collection of local insects, photos & notes")
 
 # Fetch all bug entries for dynamic sidebar building
