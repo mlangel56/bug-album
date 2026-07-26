@@ -4,12 +4,13 @@ from supabase import Client, create_client
 
 # Page Configuration
 st.set_page_config(
-    page_title="My Field Guide", page_icon="🪲", layout="centered"
+    page_title="My Field Guide",
+    page_icon="🪲",
+    layout="centered"
 )
 
 # Custom Cottagecore / Botanical CSS Styling
-st.markdown(
-    """
+st.markdown("""
     <style>
     /* Card container styling */
     .bug-card {
@@ -29,9 +30,7 @@ st.markdown(
         font-weight: 600;
     }
     </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
 # Initialize Supabase Client using Secrets
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
@@ -51,12 +50,8 @@ if page == "➕ Add New Bug":
     st.subheader("Add a New Field Entry")
 
     with st.form("bug_entry_form", clear_on_submit=True):
-        name = st.text_input(
-            "Bug Common Name", placeholder="e.g., Monarch Butterfly"
-        )
-        species = st.text_input(
-            "Scientific Name (Optional)", placeholder="e.g., Danaus plexippus"
-        )
+        name = st.text_input("Bug Common Name", placeholder="e.g., Monarch Butterfly")
+        species = st.text_input("Scientific Name (Optional)", placeholder="e.g., Danaus plexippus")
         category = st.selectbox(
             "Category",
             [
@@ -68,18 +63,11 @@ if page == "➕ Add New Bug":
             ],
         )
 
-        # Added Date Input Field (defaults to today's date)
-        date_spotted = st.date_input(
-            "Date First Spotted 📅", value=datetime.date.today()
-        )
+        # Date Input Field (defaults to today's date)
+        date_spotted = st.date_input("Date First Spotted 📅", value=datetime.date.today())
 
-        photo = st.file_uploader(
-            "Upload Bug Photo", type=["jpg", "jpeg", "png"]
-        )
-        notes = st.text_area(
-            "Field Notes & Wikipedia Summary",
-            placeholder="Notes on habitat, behavior, or facts...",
-        )
+        photo = st.file_uploader("Upload Bug Photo", type=["jpg", "jpeg", "png"])
+        notes = st.text_area("Field Notes & Wikipedia Summary", placeholder="Notes on habitat, behavior, or facts...")
 
         submitted = st.form_submit_button("✨ Save to Journal")
 
@@ -101,24 +89,19 @@ if page == "➕ Add New Bug":
                     )
 
                     # 2. Retrieve Public Image URL
-                    image_url = supabase.storage.from_(
-                        "bug-photos"
-                    ).get_public_url(file_path)
+                    image_url = supabase.storage.from_("bug-photos").get_public_url(file_path)
 
-                    # 3. Save details to database (including date_spotted)
+                    # 3. Save details to database (date converted to string YYYY-MM-DD format)
                     supabase.table("bugs").insert({
                         "name": name,
                         "species": species,
                         "category": category,
                         "date_spotted": str(date_spotted),
-                    # Saved in YYYY-MM-DD format
                         "image_url": image_url,
                         "notes": notes,
                     }).execute()
 
-                    st.success(
-                        f"🌱 '{name}' has been added to your field guide!"
-                    )
+                    st.success(f"🌱 '{name}' has been added to your field guide!")
                 except Exception as e:
                     st.error(f"Error saving entry: {e}")
             else:
@@ -138,19 +121,13 @@ elif page == "📖 Table of Contents":
     bugs = response.data
 
     if not bugs:
-        st.info(
-            "No entries added yet! Select '➕ Add New Bug' in the sidebar to make your first entry."
-        )
+        st.info("No entries added yet! Select '➕ Add New Bug' in the sidebar to make your first entry.")
     else:
         bug_names = [b["name"] for b in bugs]
-        selected_bug_name = st.selectbox(
-            "Select an entry to view:", bug_names
-        )
+        selected_bug_name = st.selectbox("Select an entry to view:", bug_names)
 
         # Find selected entry
-        selected_bug = next(
-            b for b in bugs if b["name"] == selected_bug_name
-        )
+        selected_bug = next(b for b in bugs if b["name"] == selected_bug_name)
 
         # Display entry card
         st.markdown(f"### {selected_bug['name']}")
@@ -171,3 +148,4 @@ elif page == "📖 Table of Contents":
             selected_bug["notes"]
             if selected_bug.get("notes")
             else "No notes added."
+        )
