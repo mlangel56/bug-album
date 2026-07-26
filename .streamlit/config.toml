@@ -1,0 +1,15 @@
+[theme]
+# Terracotta for primary buttons, active highlights, and selected tabs
+primaryColor = "#C86D51"
+
+# Soft Linen/Cream for the main background
+backgroundColor = "#FAF6EE"
+
+# Soft Sage Leaf for sidebars, cards, and input fields
+secondaryBackgroundColor = "#E3ECE2"
+
+# Deep Warm Slate/Brown for easy-to-read text
+textColor = "#3D3A37"
+
+# Clean typography
+font = "sans serif"
