@@ -1,7 +1,6 @@
 import datetime
 import json
 import streamlit as st
-import streamlit.components.v1 as components
 from supabase import Client, create_client
 
 # Page Configuration
@@ -11,35 +10,40 @@ st.set_page_config(
     layout="centered"
 )
 
-# Inject Web App Manifest metadata so Android detects the app name as "Bugpedia 🪲"
-pwa_manifest = {
-    "name": "Bugpedia 🪲",
-    "short_name": "Bugpedia 🪲",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#E3ECE2",
-    "theme_color": "#E3ECE2",
-    "icons": [
-        {
-            "src": "https://em-content.zobj.net/source/apple/354/bug_1f41b.png",
-            "sizes": "192x192",
-            "type": "image/png",
-        }
-    ],
-}
-
-manifest_script = f"""
+# Direct document head manipulation (breaks out of Streamlit iframe)
+st.html("""
     <script>
-        var manifest = {json.dumps(pwa_manifest)};
-        var blob = new Blob([JSON.stringify(manifest)], {{type: 'application/json'}});
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = url;
-        document.getElementsByTagName('head')[0].appendChild(link);
+        // Update browser document title
+        window.top.document.title = "Bugpedia 🪲";
+        
+        // Dynamically insert/update manifest tag in parent window head
+        const manifestObj = {
+            "name": "Bugpedia 🪲",
+            "short_name": "Bugpedia 🪲",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#FAF6EE",
+            "theme_color": "#C86D51",
+            "icons": [{
+                "src": "https://em-content.zobj.net/source/apple/354/bug_1f41b.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }]
+        };
+        
+        const stringManifest = JSON.stringify(manifestObj);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(blob);
+        
+        let linkTag = window.top.document.querySelector('link[rel="manifest"]');
+        if (!linkTag) {
+            linkTag = window.top.document.createElement('link');
+            linkTag.rel = 'manifest';
+            window.top.document.head.appendChild(linkTag);
+        }
+        linkTag.href = manifestUrl;
     </script>
-"""
-components.html(manifest_script, height=0, width=0)
+""")
 
 # Custom Cottagecore / Botanical CSS Styling
 st.markdown("""
