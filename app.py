@@ -1,13 +1,45 @@
 import datetime
+import json
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import Client, create_client
 
 # Page Configuration
 st.set_page_config(
-    page_title="Bugpedia",
+    page_title="Bugpedia 🪲",
     page_icon="🪲",
     layout="centered"
 )
+
+# Inject Web App Manifest metadata so Android detects the app name as "Bugpedia 🪲"
+pwa_manifest = {
+    "name": "Bugpedia 🪲",
+    "short_name": "Bugpedia 🪲",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#E3ECE2",
+    "theme_color": "#E3ECE2",
+    "icons": [
+        {
+            "src": "https://em-content.zobj.net/source/apple/354/bug_1f41b.png",
+            "sizes": "192x192",
+            "type": "image/png",
+        }
+    ],
+}
+
+manifest_script = f"""
+    <script>
+        var manifest = {json.dumps(pwa_manifest)};
+        var blob = new Blob([JSON.stringify(manifest)], {{type: 'application/json'}});
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = url;
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+"""
+components.html(manifest_script, height=0, width=0)
 
 # Custom Cottagecore / Botanical CSS Styling
 st.markdown("""
