@@ -13,3 +13,7 @@ textColor = "#3D3A37"
 
 # Clean typography
 font = "sans serif"
+
+[client]
+# Ensures title matches app configuration on load
+showErrorDetails = true
