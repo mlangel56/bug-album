@@ -63,7 +63,7 @@ if page == "➕ Add New Bug":
             ],
         )
 
-        # Date Input Field (defaults to today's date)
+        # Date Input Field
         date_spotted = st.date_input("Date First Spotted 📅", value=datetime.date.today())
 
         photo = st.file_uploader("Upload Bug Photo", type=["jpg", "jpeg", "png"])
@@ -135,11 +135,22 @@ elif page == "📖 Table of Contents":
         if selected_bug.get("species"):
             st.caption(f"*Scientific name: {selected_bug['species']}*")
 
-        # Display Category and Date Spotted
         if selected_bug.get("category"):
             st.write(f"**Category:** {selected_bug['category']}")
+            
+        # Display Formatted Date Spotted
         if selected_bug.get("date_spotted"):
-            st.write(f"**Date First Spotted:** {selected_bug['date_spotted']}")
+            raw_date = selected_bug["date_spotted"]
+            try:
+                if isinstance(raw_date, str):
+                    parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
+                else:
+                    parsed_date = raw_date
+                formatted_date = parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
+            except Exception:
+                formatted_date = raw_date # Fallback if already formatted
+                
+            st.write(f"**Date First Spotted:** {formatted_date}")
 
         if selected_bug.get("image_url"):
             st.image(selected_bug["image_url"], use_container_width=True)
@@ -159,15 +170,17 @@ elif page == "📖 Table of Contents":
                 edit_name = st.text_input("Bug Common Name", value=selected_bug.get("name", ""))
                 edit_species = st.text_input("Scientific Name", value=selected_bug.get("species", ""))
                 
-                # Pre-select existing category index
                 cat_options = ["Butterfly/Moth 🦋", "Beetle 🐞", "Bee/Wasp 🐝", "Spider 🕷️", "Other 🌿"]
                 current_cat = selected_bug.get("category", cat_options[0])
                 cat_index = cat_options.index(current_cat) if current_cat in cat_options else 0
                 edit_category = st.selectbox("Category", cat_options, index=cat_index)
 
-                # Pre-fill date
                 existing_date = selected_bug.get("date_spotted")
-                default_date = datetime.datetime.strptime(existing_date, "%Y-%m-%d").date() if existing_date else datetime.date.today()
+                try:
+                    default_date = datetime.datetime.strptime(existing_date, "%Y-%m-%d").date() if existing_date else datetime.date.today()
+                except Exception:
+                    default_date = datetime.date.today()
+                    
                 edit_date = st.date_input("Date First Spotted 📅", value=default_date)
 
                 edit_notes = st.text_area("Field Notes", value=selected_bug.get("notes", ""))
@@ -176,7 +189,6 @@ elif page == "📖 Table of Contents":
 
                 if update_submitted:
                     try:
-                        # Update entry in Supabase database by ID
                         supabase.table("bugs").update({
                             "name": edit_name,
                             "species": edit_species,
