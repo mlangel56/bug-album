@@ -10,7 +10,25 @@ st.set_page_config(
 
 # Custom Cottagecore / Botanical CSS Styling
 st.markdown("""
-    
+    <style>
+    /* Card container styling */
+    .bug-card {
+        background-color: #E3ECE2;
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid #C86D51;
+        margin-bottom: 25px;
+    }
+    /* Rounded images */
+    img {
+        border-radius: 14px !important;
+    }
+    /* Soft header styling */
+    h1, h2, h3 {
+        color: #3D3A37 !important;
+        font-weight: 600;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 # Initialize Supabase Client using Secrets
@@ -28,7 +46,7 @@ page = st.sidebar.radio("Go to:", ["📖 Table of Contents", "➕ Add New Bug"])
 
 # ---------------- PAGE 1: ADD NEW BUG ----------------
 if page == "➕ Add New Bug":
-    st.subheader(" Add a New Field Entry")
+    st.subheader("Add a New Field Entry")
     
     with st.form("bug_entry_form", clear_on_submit=True):
         name = st.text_input("Bug Common Name", placeholder="e.g., Monarch Butterfly")
@@ -73,7 +91,7 @@ if page == "➕ Add New Bug":
 
 # ---------------- PAGE 2: TABLE OF CONTENTS ----------------
 elif page == "📖 Table of Contents":
-    st.subheader(" Entries")
+    st.subheader("Entries")
     
     # Fetch entries from database
     response = supabase.table("bugs").select("*").order("created_at", desc=True).execute()
@@ -88,9 +106,6 @@ elif page == "📖 Table of Contents":
         # Find selected entry
         selected_bug = next(b for b in bugs if b["name"] == selected_bug_name)
         
-        st.markdown("
-", unsafe_allow_html=True)
-        
         # Display entry card
         st.markdown(f"### {selected_bug['name']}")
         if selected_bug.get("species"):
@@ -99,7 +114,7 @@ elif page == "📖 Table of Contents":
             st.write(f"**Category:** {selected_bug['category']}")
             
         if selected_bug.get("image_url"):
-            st.image(selected_bug["image_url"], use_column_width=True)
+            st.image(selected_bug["image_url"], use_container_width=True)
             
         st.markdown("#### 📝 Field Notes")
         st.write(selected_bug["notes"] if selected_bug.get("notes") else "No notes added.")
