@@ -22,7 +22,7 @@ st.html("""
             "short_name": "Bugpedia 🪲",
             "start_url": "/",
             "display": "standalone",
-            "background_color": "#211715",
+            "background_color": "#FAF6EE",
             "theme_color": "#C86D51",
             "icons": [{
                 "src": "https://em-content.zobj.net/source/apple/354/bug_1f41b.png",
@@ -45,64 +45,25 @@ st.html("""
     </script>
 """)
 
-# Custom Dark Wood Grain & Botanical CSS
+# Custom Cottagecore / Botanical CSS Styling
 st.markdown("""
     <style>
-    /* Dark Wood Grain Background */
-    .stApp {
-        background-color: #2b1f1d !important;
-        background-image: 
-            /* Dark wood SVG texture overlay */
-            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" opacity="0.18"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.12" numOctaves="4" result="noise"/><feColorMatrix type="matrix" values="0.4 0 0 0 0  0.2 0 0 0 0  0.1 0 0 0 0  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>'),
-            /* Deep radial warmth behind grain */
-            radial-gradient(circle at 50% 30%, #3a2b28 0%, #1c1312 100%) !important;
-        background-attachment: fixed !important;
-        background-repeat: repeat, no-repeat !important;
-        color: #f2ede4 !important;
-    }
-
-    /* Dark Glass Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: rgba(28, 19, 18, 0.85) !important;
-        backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(200, 109, 81, 0.3);
-    }
-
-    /* Floating Cards on Dark Backdrop */
+    /* Card container styling */
     .bug-card {
-        background-color: rgba(45, 34, 31, 0.85) !important;
-        backdrop-filter: blur(10px);
-        padding: 24px;
+        background-color: #E3ECE2;
+        padding: 20px;
         border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.35);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid #C86D51;
         margin-bottom: 25px;
     }
-
-    /* Rounded images with soft warm glow */
+    /* Rounded images */
     img {
         border-radius: 14px !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
     }
-
-    /* Soft light headers for high contrast */
-    h1, h2, h3, h4 {
-        color: #f7eedd !important;
+    /* Soft header styling */
+    h1, h2, h3 {
+        color: #3D3A37 !important;
         font-weight: 600;
-    }
-
-    /* Form styling for dark background */
-    [data-testid="stForm"] {
-        background-color: rgba(45, 34, 31, 0.75);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.35);
-        padding: 20px;
-    }
-    
-    /* Subtle accent colors for labels & text */
-    p, span, label {
-        color: #e5ded3 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -137,11 +98,11 @@ response = (
 bugs = response.data or []
 
 # Build sidebar menu choices dynamically
-nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
+nav_options = ["📖 Table of Contents", "➕ Add New Bug"]
 bug_menu_map = {}
 
 for bug in bugs:
-    sidebar_label = f"📖 {bug['name']}"
+    sidebar_label = f"🪲 {bug['name']}"
     nav_options.append(sidebar_label)
     bug_menu_map[sidebar_label] = bug
 
@@ -187,7 +148,7 @@ def display_bug_details(selected_bug):
     # Edit section
     with st.expander("✏️ Edit This Entry"):
         with st.form(f"edit_bug_form_{selected_bug['id']}"):
-            edit_name = st.text_input("Common Name", value=selected_bug.get("name", ""))
+            edit_name = st.text_input("Bug Common Name", value=selected_bug.get("name", ""))
             edit_species = st.text_input("Scientific Name", value=selected_bug.get("species", ""))
 
             current_cat = selected_bug.get("category", CATEGORY_OPTIONS[0])
@@ -225,18 +186,18 @@ def display_bug_details(selected_bug):
                     st.error(f"Error updating entry: {e}")
 
 
-# ---------------- PAGE 1: ADD NEW ENTRY ----------------
-if selected_option == "➕ Add New Entry":
+# ---------------- PAGE 1: ADD NEW BUG ----------------
+if selected_option == "➕ Add New Bug":
     st.subheader("Add a New Field Entry")
 
     with st.form("bug_entry_form", clear_on_submit=True):
-        name = st.text_input("Common Name", placeholder="e.g., Monarch Butterfly, Chanterelle, Fern")
+        name = st.text_input("Bug Common Name", placeholder="e.g., Monarch Butterfly")
         species = st.text_input("Scientific Name (Optional)", placeholder="e.g., Danaus plexippus")
         category = st.selectbox("Category", CATEGORY_OPTIONS)
 
         location = st.text_input("Location 📍", placeholder="e.g., Backyard Garden, Oak Creek Trail")
         date_spotted = st.date_input("Date First Spotted 📅", value=datetime.date.today())
-        photo = st.file_uploader("Upload Photo", type=["jpg", "jpeg", "png"])
+        photo = st.file_uploader("Upload Bug Photo", type=["jpg", "jpeg", "png"])
         notes = st.text_area("Field Notes & Wikipedia Summary", placeholder="Notes on habitat, behavior, or facts...")
 
         submitted = st.form_submit_button("✨ Save to Journal")
@@ -274,14 +235,14 @@ if selected_option == "➕ Add New Entry":
                 except Exception as e:
                     st.error(f"Error saving entry: {e}")
             else:
-                st.warning("Please provide at least a Common Name and a Photo!")
+                st.warning("Please provide at least a Bug Name and a Photo!")
 
 # ---------------- PAGE 2: TABLE OF CONTENTS ----------------
 elif selected_option == "📖 Table of Contents":
     st.subheader("Entries Overview")
 
     if not bugs:
-        st.info("No entries added yet! Select '➕ Add New Entry' in the sidebar to make your first entry.")
+        st.info("No entries added yet! Select '➕ Add New Bug' in the sidebar to make your first entry.")
     else:
         bug_names = [b["name"] for b in bugs]
         selected_bug_name = st.selectbox("Select an entry to view:", bug_names)
@@ -289,7 +250,7 @@ elif selected_option == "📖 Table of Contents":
 
         display_bug_details(selected_bug)
 
-# ---------------- PAGE 3: INDIVIDUAL ENTRY VIEW (FROM SIDEBAR) ----------------
+# ---------------- PAGE 3: INDIVIDUAL BUG VIEW (FROM SIDEBAR) ----------------
 elif selected_option in bug_menu_map:
     selected_bug = bug_menu_map[selected_option]
     display_bug_details(selected_bug)
