@@ -109,6 +109,10 @@ def display_bug_details(selected_bug):
     if selected_bug.get("category"):
         st.write(f"**Category:** {selected_bug['category']}")
 
+    # Location Display
+    if selected_bug.get("location"):
+        st.write(f"**📍 Location:** {selected_bug['location']}")
+
     # Formatted Date Display
     if selected_bug.get("date_spotted"):
         raw_date = selected_bug["date_spotted"]
@@ -141,6 +145,9 @@ def display_bug_details(selected_bug):
             cat_index = cat_options.index(current_cat) if current_cat in cat_options else 0
             edit_category = st.selectbox("Category", cat_options, index=cat_index)
 
+            # Location Edit Field
+            edit_location = st.text_input("Location 📍", value=selected_bug.get("location", ""))
+
             existing_date = selected_bug.get("date_spotted")
             try:
                 default_date = datetime.datetime.strptime(existing_date, "%Y-%m-%d").date() if existing_date else datetime.date.today()
@@ -158,6 +165,7 @@ def display_bug_details(selected_bug):
                         "name": edit_name,
                         "species": edit_species,
                         "category": edit_category,
+                        "location": edit_location,
                         "date_spotted": str(edit_date),
                         "notes": edit_notes,
                     }).eq("id", selected_bug["id"]).execute()
@@ -186,6 +194,7 @@ if selected_option == "➕ Add New Bug":
             ],
         )
 
+        location = st.text_input("Location 📍", placeholder="e.g., Backyard Garden, Oak Creek Trail")
         date_spotted = st.date_input("Date First Spotted 📅", value=datetime.date.today())
         photo = st.file_uploader("Upload Bug Photo", type=["jpg", "jpeg", "png"])
         notes = st.text_area("Field Notes & Wikipedia Summary", placeholder="Notes on habitat, behavior, or facts...")
@@ -214,6 +223,7 @@ if selected_option == "➕ Add New Bug":
                         "name": name,
                         "species": species,
                         "category": category,
+                        "location": location,
                         "date_spotted": str(date_spotted),
                         "image_url": image_url,
                         "notes": notes,
