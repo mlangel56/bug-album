@@ -22,7 +22,7 @@ st.html("""
             "short_name": "Bugpedia 🪲",
             "start_url": "/",
             "display": "standalone",
-            "background_color": "#211715",
+            "background_color": "#FAF6EE",
             "theme_color": "#C86D51",
             "icons": [{
                 "src": "https://em-content.zobj.net/source/apple/354/bug_1f41b.png",
@@ -45,64 +45,58 @@ st.html("""
     </script>
 """)
 
-# Custom Dark Wood Grain & Botanical CSS
+# Custom Cottagecore / Botanical CSS Styling with Soft Wood Grain Pattern (Method A)
 st.markdown("""
     <style>
-    /* Dark Wood Grain Background */
+    /* Soft Wood Grain Pattern Overlay */
     .stApp {
-        background-color: #2b1f1d !important;
+        background-color: #f7f3eb !important;
         background-image: 
-            /* Dark wood SVG texture overlay */
-            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" opacity="0.18"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.12" numOctaves="4" result="noise"/><feColorMatrix type="matrix" values="0.4 0 0 0 0  0.2 0 0 0 0  0.1 0 0 0 0  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>'),
-            /* Deep radial warmth behind grain */
-            radial-gradient(circle at 50% 30%, #3a2b28 0%, #1c1312 100%) !important;
+            /* Subtle wood-grain SVG overlay */
+            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.06"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.15" numOctaves="3" result="noise"/><feColorMatrix type="matrix" values="1 0 0 0 0  0 0.8 0 0 0  0 0 0.6 0 0  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>'),
+            /* Warm-toned gradient glow behind grain */
+            radial-gradient(circle at 50% 20%, #FAF6EE 0%, #EAE0D0 100%) !important;
         background-attachment: fixed !important;
         background-repeat: repeat, no-repeat !important;
-        color: #f2ede4 !important;
     }
 
-    /* Dark Glass Sidebar */
+    /* Style sidebar with semi-transparent frosted glass */
     [data-testid="stSidebar"] {
-        background-color: rgba(28, 19, 18, 0.85) !important;
+        background-color: rgba(247, 243, 235, 0.75) !important;
         backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(200, 109, 81, 0.3);
+        border-right: 1px solid rgba(200, 109, 81, 0.25);
     }
 
-    /* Floating Cards on Dark Backdrop */
+    /* Floating card containers */
     .bug-card {
-        background-color: rgba(45, 34, 31, 0.85) !important;
+        background-color: rgba(255, 255, 255, 0.85) !important;
         backdrop-filter: blur(10px);
         padding: 24px;
         border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.35);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(200, 109, 81, 0.25);
+        box-shadow: 0 8px 24px rgba(61, 58, 55, 0.08);
         margin-bottom: 25px;
     }
 
-    /* Rounded images with soft warm glow */
+    /* Rounded images */
     img {
         border-radius: 14px !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 12px rgba(61, 58, 55, 0.1);
     }
 
-    /* Soft light headers for high contrast */
-    h1, h2, h3, h4 {
-        color: #f7eedd !important;
+    /* Soft header styling */
+    h1, h2, h3 {
+        color: #3D3A37 !important;
         font-weight: 600;
     }
 
-    /* Form styling for dark background */
+    /* Style forms to float cleanly on wood grain */
     [data-testid="stForm"] {
-        background-color: rgba(45, 34, 31, 0.75);
+        background-color: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(10px);
         border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.35);
+        border: 1px solid rgba(200, 109, 81, 0.25);
         padding: 20px;
-    }
-    
-    /* Subtle accent colors for labels & text */
-    p, span, label {
-        color: #e5ded3 !important;
     }
     </style>
 """, unsafe_allow_html=True)
