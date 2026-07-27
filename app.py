@@ -45,25 +45,52 @@ st.html("""
     </script>
 """)
 
-# Custom Cottagecore / Botanical CSS Styling
+# Custom Cottagecore / Botanical CSS Styling (Option 1)
 st.markdown("""
     <style>
-    /* Card container styling */
+    /* Gradient background with an organic texture feel */
+    .stApp {
+        background: linear-gradient(135deg, #FAF6EE 0%, #E8EFE6 50%, #F5EBE1 100%) !important;
+        background-attachment: fixed !important;
+    }
+
+    /* Style sidebar to match background aesthetic */
+    [data-testid="stSidebar"] {
+        background-color: rgba(245, 246, 242, 0.6) !important;
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(200, 109, 81, 0.2);
+    }
+
+    /* Floating card container styling */
     .bug-card {
-        background-color: #E3ECE2;
-        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(8px);
+        padding: 24px;
         border-radius: 16px;
-        border: 1px solid #C86D51;
+        border: 1px solid rgba(200, 109, 81, 0.3);
+        box-shadow: 0 8px 24px rgba(61, 58, 55, 0.06);
         margin-bottom: 25px;
     }
+
     /* Rounded images */
     img {
         border-radius: 14px !important;
+        box-shadow: 0 4px 12px rgba(61, 58, 55, 0.08);
     }
+
     /* Soft header styling */
     h1, h2, h3 {
         color: #3D3A37 !important;
         font-weight: 600;
+    }
+
+    /* Style form containers to float soft over gradient */
+    [data-testid="stForm"] {
+        background-color: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        border: 1px solid rgba(200, 109, 81, 0.25);
+        padding: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
