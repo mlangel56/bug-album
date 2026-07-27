@@ -45,58 +45,25 @@ st.html("""
     </script>
 """)
 
-# Custom Cottagecore / Botanical CSS Styling with Soft Wood Grain Pattern (Method A)
+# Custom Cottagecore / Botanical CSS Styling
 st.markdown("""
     <style>
-    /* Soft Wood Grain Pattern Overlay */
-    .stApp {
-        background-color: #f7f3eb !important;
-        background-image: 
-            /* Subtle wood-grain SVG overlay */
-            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.06"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.15" numOctaves="3" result="noise"/><feColorMatrix type="matrix" values="1 0 0 0 0  0 0.8 0 0 0  0 0 0.6 0 0  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>'),
-            /* Warm-toned gradient glow behind grain */
-            radial-gradient(circle at 50% 20%, #FAF6EE 0%, #EAE0D0 100%) !important;
-        background-attachment: fixed !important;
-        background-repeat: repeat, no-repeat !important;
-    }
-
-    /* Style sidebar with semi-transparent frosted glass */
-    [data-testid="stSidebar"] {
-        background-color: rgba(247, 243, 235, 0.75) !important;
-        backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(200, 109, 81, 0.25);
-    }
-
-    /* Floating card containers */
+    /* Card container styling */
     .bug-card {
-        background-color: rgba(255, 255, 255, 0.85) !important;
-        backdrop-filter: blur(10px);
-        padding: 24px;
+        background-color: #E3ECE2;
+        padding: 20px;
         border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.25);
-        box-shadow: 0 8px 24px rgba(61, 58, 55, 0.08);
+        border: 1px solid #C86D51;
         margin-bottom: 25px;
     }
-
     /* Rounded images */
     img {
         border-radius: 14px !important;
-        box-shadow: 0 4px 12px rgba(61, 58, 55, 0.1);
     }
-
     /* Soft header styling */
     h1, h2, h3 {
         color: #3D3A37 !important;
         font-weight: 600;
-    }
-
-    /* Style forms to float cleanly on wood grain */
-    [data-testid="stForm"] {
-        background-color: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(200, 109, 81, 0.25);
-        padding: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
