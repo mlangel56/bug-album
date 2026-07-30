@@ -43,7 +43,7 @@ st.html("""
     </script>
 """)
 
-# Custom Cottagecore / Botanical CSS Styling
+# Custom Cottagecore / Botanical & Bookish TOC CSS Styling
 st.markdown("""
     <style>
     .bug-card {
@@ -59,6 +59,55 @@ st.markdown("""
     h1, h2, h3 {
         color: #3D3A37 !important;
         font-weight: 600;
+    }
+    
+    /* Table of Contents Book Styling */
+    .toc-title {
+        text-align: center;
+        letter-spacing: 4px;
+        font-family: 'Georgia', serif;
+        font-size: 1.8rem;
+        color: #3D3A37;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+    .toc-divider {
+        border-top: 2px solid #C86D51;
+        width: 80%;
+        margin: 0 auto 30px auto;
+    }
+    .toc-container {
+        font-family: 'Georgia', serif;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+    .toc-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        font-size: 1.05rem;
+        color: #3D3A37;
+    }
+    .toc-name {
+        font-weight: 600;
+        white-space: nowrap;
+        padding-right: 8px;
+    }
+    .toc-dots {
+        flex-grow: 1;
+        border-bottom: 2px dotted #C86D51;
+        margin: 0 8px;
+        position: relative;
+        top: -4px;
+        opacity: 0.6;
+    }
+    .toc-date {
+        white-space: nowrap;
+        padding-left: 8px;
+        font-style: italic;
+        color: #6B6560;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -101,17 +150,25 @@ for bug in bugs:
     nav_options.append(sidebar_label)
     bug_menu_map[sidebar_label] = bug
 
+# Initialize session state navigation if not set
+if "nav_selection" not in st.session_state:
+    st.session_state.nav_selection = "📖 Table of Contents"
+
 # Navigation Sidebar
 st.sidebar.title("📌 Journal Menu")
-selected_option = st.sidebar.radio("Go to:", nav_options)
+selected_option = st.sidebar.radio(
+    "Go to:", 
+    nav_options, 
+    index=nav_options.index(st.session_state.nav_selection) if st.session_state.nav_selection in nav_options else 0,
+    key="nav_selection"
+)
 
 
-# Helper function to extract image list (supports legacy single string & new array/JSON)
+# Helper function to extract image list
 def get_image_list(bug_data):
     raw_images = bug_data.get("image_url") or []
     if isinstance(raw_images, str):
         try:
-            # Check if JSON string
             parsed = json.loads(raw_images)
             return parsed if isinstance(parsed, list) else [raw_images]
         except Exception:
@@ -119,6 +176,22 @@ def get_image_list(bug_data):
     elif isinstance(raw_images, list):
         return raw_images
     return []
+
+
+# Helper function to format date consistently as "July 3, 2026"
+def format_date_str(raw_date):
+    if not raw_date:
+        return "Unknown Date"
+    try:
+        if isinstance(raw_date, str):
+            parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
+        else:
+            parsed_date = raw_date
+        # %B = Full Month Name, %d = Day, %Y = 4-digit Year
+        # replace(" 0", " ") removes leading zeros from days (e.g., July 03 -> July 3)
+        return parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
+    except Exception:
+        return str(raw_date)
 
 
 # Helper function to display entry details & edit form
@@ -134,15 +207,7 @@ def display_bug_details(selected_bug):
         st.write(f"**📍 Location:** {selected_bug['location']}")
 
     if selected_bug.get("date_spotted"):
-        raw_date = selected_bug["date_spotted"]
-        try:
-            if isinstance(raw_date, str):
-                parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
-            else:
-                parsed_date = raw_date
-            formatted_date = parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
-        except Exception:
-            formatted_date = raw_date
+        formatted_date = format_date_str(selected_bug["date_spotted"])
         st.write(f"**Date First Spotted:** {formatted_date}")
 
     # Render multiple images in a grid or stack
@@ -182,7 +247,6 @@ def display_bug_details(selected_bug):
 
             edit_date = st.date_input("Date First Spotted 📅", value=default_date)
             
-            # Optional upload to add additional photos
             new_photos = st.file_uploader(
                 "Add Additional Photos (Optional)", 
                 type=["jpg", "jpeg", "png"], 
@@ -197,7 +261,6 @@ def display_bug_details(selected_bug):
                 try:
                     existing_urls = get_image_list(selected_bug)
 
-                    # Upload any newly attached photos
                     if new_photos:
                         for photo in new_photos:
                             file_bytes = photo.read()
@@ -219,7 +282,7 @@ def display_bug_details(selected_bug):
                         "category": edit_category,
                         "location": edit_location,
                         "date_spotted": str(edit_date),
-                        "image_url": existing_urls,  # Saves list of image URLs
+                        "image_url": existing_urls,
                         "notes": edit_notes,
                     }).eq("id", selected_bug["id"]).execute()
 
@@ -229,8 +292,41 @@ def display_bug_details(selected_bug):
                     st.error(f"Error updating entry: {e}")
 
 
-# ---------------- PAGE 1: ADD NEW ENTRY ----------------
-if selected_option == "➕ Add New Entry":
+# ---------------- PAGE 1: TABLE OF CONTENTS (DEFAULT HOMEPAGE) ----------------
+if selected_option == "📖 Table of Contents":
+    st.markdown('<div class="toc-title">Table of Contents</div>', unsafe_allow_html=True)
+    st.markdown('<div class="toc-divider"></div>', unsafe_allow_html=True)
+
+    if not bugs:
+        st.info("No entries added yet! Select '➕ Add New Entry' in the sidebar to make your first entry.")
+    else:
+        st.markdown('<div class="toc-container">', unsafe_allow_html=True)
+        
+        for bug in bugs:
+            bug_name = bug.get("name", "Unnamed Entry")
+            formatted_date = format_date_str(bug.get("date_spotted"))
+            sidebar_label = f"🪲 {bug_name}"
+
+            # Render styled leader dots row
+            st.markdown(f"""
+                <div class="toc-row">
+                    <span class="toc-name">{bug_name}</span>
+                    <span class="toc-dots"></span>
+                    <span class="toc-date">{formatted_date}</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Quick jump button underneath each line
+            if st.button(f"📖 View '{bug_name}'", key=f"toc_btn_{bug['id']}", use_container_width=True):
+                st.session_state.nav_selection = sidebar_label
+                st.rerun()
+
+            st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- PAGE 2: ADD NEW ENTRY ----------------
+elif selected_option == "➕ Add New Entry":
     st.subheader("Add a New Field Entry")
 
     with st.form("bug_entry_form", clear_on_submit=True):
@@ -241,9 +337,7 @@ if selected_option == "➕ Add New Entry":
         location = st.text_input("Location 📍", placeholder="e.g., Backyard Garden, Oak Creek Trail")
         date_spotted = st.date_input("Date First Spotted 📅", value=datetime.date.today())
         
-        # Multiple file upload enabled here:
         photos = st.file_uploader("Upload Bug/Plant/Fungi Photos", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
-        
         notes = st.text_area("Field Notes & Wikipedia Summary", placeholder="Notes on habitat, behavior, or facts...")
 
         submitted = st.form_submit_button("✨ Save to Journal")
@@ -253,7 +347,6 @@ if selected_option == "➕ Add New Entry":
                 try:
                     uploaded_image_urls = []
                     
-                    # Loop over every uploaded file and upload to Supabase Storage
                     for index, photo in enumerate(photos):
                         file_bytes = photo.read()
                         clean_filename = name.lower().replace(" ", "_")
@@ -272,7 +365,6 @@ if selected_option == "➕ Add New Entry":
                         img_url = supabase.storage.from_("bug-photos").get_public_url(file_path)
                         uploaded_image_urls.append(img_url)
 
-                    # Insert record into database with array of image URLs
                     supabase.table("bugs").insert({
                         "name": name,
                         "species": species,
@@ -290,20 +382,7 @@ if selected_option == "➕ Add New Entry":
             else:
                 st.warning("Please provide at least a Name and at least one Photo!")
 
-# ---------------- PAGE 2: TABLE OF CONTENTS ----------------
-elif selected_option == "📖 Table of Contents":
-    st.subheader("Entries Overview")
-
-    if not bugs:
-        st.info("No entries added yet! Select '➕ Add New Entry' in the sidebar to make your first entry.")
-    else:
-        bug_names = [b["name"] for b in bugs]
-        selected_bug_name = st.selectbox("Select an entry to view:", bug_names)
-        selected_bug = next(b for b in bugs if b["name"] == selected_bug_name)
-
-        display_bug_details(selected_bug)
-
-# ---------------- PAGE 3: INDIVIDUAL VIEW (FROM SIDEBAR) ----------------
+# ---------------- PAGE 3: INDIVIDUAL VIEW (FROM SIDEBAR OR TOC) ----------------
 elif selected_option in bug_menu_map:
     selected_bug = bug_menu_map[selected_option]
     display_bug_details(selected_bug)
