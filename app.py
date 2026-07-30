@@ -46,20 +46,34 @@ st.html("""
 # Custom Cottagecore / Botanical & Bookish TOC CSS Styling
 st.markdown("""
     <style>
-    /* HIDE SIDEBAR RADIO BUTTON CIRCLES */
-    div[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+    /* HIDE SIDEBAR RADIO BUTTON CIRCLES COMPLETELY */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
+    div[data-testid="stSidebar"] div[role="radiogroup"] label[data-baseweb="radio"] > div:first-child,
+    div[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"] {
         display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
     }
     
     /* Style sidebar menu items to feel like clean clickable rows */
     div[data-testid="stSidebar"] div[role="radiogroup"] label {
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s ease !important;
+        margin-bottom: 4px !important;
     }
+    
+    /* Subtle background highlight when hovering */
     div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(200, 109, 81, 0.12);
+        background-color: rgba(200, 109, 81, 0.12) !important;
+    }
+
+    /* Active selected item highlight */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+        background-color: rgba(200, 109, 81, 0.2) !important;
+        font-weight: 600 !important;
     }
 
     .bug-card {
