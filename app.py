@@ -46,6 +46,22 @@ st.html("""
 # Custom Cottagecore / Botanical & Bookish TOC CSS Styling
 st.markdown("""
     <style>
+    /* HIDE SIDEBAR RADIO BUTTON CIRCLES */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+        display: none !important;
+    }
+    
+    /* Style sidebar menu items to feel like clean clickable rows */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label {
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(200, 109, 81, 0.12);
+    }
+
     .bug-card {
         background-color: #E3ECE2;
         padding: 20px;
