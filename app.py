@@ -163,16 +163,20 @@ for bug in bugs:
     nav_options.append(sidebar_label)
     bug_menu_map[sidebar_label] = bug
 
-# Initialize session state navigation if not set
-if "nav_selection" not in st.session_state:
-    st.session_state.nav_selection = "📖 Table of Contents"
+# Handle pending navigation safely before st.radio is rendered
+if "pending_nav" in st.session_state and st.session_state.pending_nav in nav_options:
+    st.session_state["nav_selection"] = st.session_state.pending_nav
+    del st.session_state["pending_nav"]
+
+# Default selection if key doesn't exist yet
+if "nav_selection" not in st.session_state or st.session_state.nav_selection not in nav_options:
+    st.session_state["nav_selection"] = "📖 Table of Contents"
 
 # Navigation Sidebar
 st.sidebar.title("📌 Journal Menu")
 selected_option = st.sidebar.radio(
     "Go to:", 
     nav_options, 
-    index=nav_options.index(st.session_state.nav_selection) if st.session_state.nav_selection in nav_options else 0,
     key="nav_selection"
 )
 
@@ -317,17 +321,14 @@ if selected_option == "📖 Table of Contents":
             formatted_date = format_date_str(bug.get("date_spotted"))
             sidebar_label = f"🪲 {bug_name}"
 
-            # 2 columns: Column 1 holds the clickable name, Column 2 holds dots + date
             col1, col2 = st.columns([0.45, 0.55], vertical_alignment="bottom")
 
             with col1:
-                # Text button acting as direct link
                 if st.button(bug_name, key=f"toc_link_{bug['id']}", type="tertiary"):
-                    st.session_state.nav_selection = sidebar_label
+                    st.session_state.pending_nav = sidebar_label
                     st.rerun()
 
             with col2:
-                # Leader dots and formatted date
                 st.markdown(f"""
                     <div class="toc-row">
                         <span class="toc-dots"></span>
