@@ -86,14 +86,9 @@ st.markdown("""
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        margin-bottom: 14px;
+        margin-bottom: 8px;
         font-size: 1.05rem;
         color: #3D3A37;
-    }
-    .toc-name {
-        font-weight: 600;
-        white-space: nowrap;
-        padding-right: 8px;
     }
     .toc-dots {
         flex-grow: 1;
@@ -108,6 +103,24 @@ st.markdown("""
         padding-left: 8px;
         font-style: italic;
         color: #6B6560;
+    }
+    
+    /* Clean text-style link for TOC items */
+    div[data-testid="stColumn"] button[kind="tertiary"] {
+        padding: 0 !important;
+        font-family: 'Georgia', serif !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        color: #3D3A37 !important;
+        background: transparent !important;
+        border: none !important;
+        text-align: left !important;
+        line-height: inherit !important;
+        box-shadow: none !important;
+    }
+    div[data-testid="stColumn"] button[kind="tertiary"]:hover {
+        color: #C86D51 !important;
+        text-decoration: underline !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -187,8 +200,6 @@ def format_date_str(raw_date):
             parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
         else:
             parsed_date = raw_date
-        # %B = Full Month Name, %d = Day, %Y = 4-digit Year
-        # replace(" 0", " ") removes leading zeros from days (e.g., July 03 -> July 3)
         return parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
     except Exception:
         return str(raw_date)
@@ -210,7 +221,6 @@ def display_bug_details(selected_bug):
         formatted_date = format_date_str(selected_bug["date_spotted"])
         st.write(f"**Date First Spotted:** {formatted_date}")
 
-    # Render multiple images in a grid or stack
     image_list = get_image_list(selected_bug)
     if image_list:
         st.markdown("#### 📷 Photos")
@@ -307,21 +317,23 @@ if selected_option == "📖 Table of Contents":
             formatted_date = format_date_str(bug.get("date_spotted"))
             sidebar_label = f"🪲 {bug_name}"
 
-            # Render styled leader dots row
-            st.markdown(f"""
-                <div class="toc-row">
-                    <span class="toc-name">{bug_name}</span>
-                    <span class="toc-dots"></span>
-                    <span class="toc-date">{formatted_date}</span>
-                </div>
-            """, unsafe_allow_html=True)
+            # 2 columns: Column 1 holds the clickable name, Column 2 holds dots + date
+            col1, col2 = st.columns([0.45, 0.55], vertical_alignment="bottom")
 
-            # Quick jump button underneath each line
-            if st.button(f"📖 View '{bug_name}'", key=f"toc_btn_{bug['id']}", use_container_width=True):
-                st.session_state.nav_selection = sidebar_label
-                st.rerun()
+            with col1:
+                # Text button acting as direct link
+                if st.button(bug_name, key=f"toc_link_{bug['id']}", type="tertiary"):
+                    st.session_state.nav_selection = sidebar_label
+                    st.rerun()
 
-            st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+            with col2:
+                # Leader dots and formatted date
+                st.markdown(f"""
+                    <div class="toc-row">
+                        <span class="toc-dots"></span>
+                        <span class="toc-date">{formatted_date}</span>
+                    </div>
+                """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
