@@ -298,7 +298,7 @@ def display_bug_details(selected_bug):
     st.markdown(f"### {selected_bug['name']}")
     if selected_bug.get("species"):
         st.markdown(
-        f"<span style='color: #824f21; font-style: italic; font-size: 0.9rem;'>Scientific name: {selected_bug['species']}</span>", 
+        f"<span style='color: #A67B5B; font-size: 0.9rem;'>Scientific name: <i>{selected_bug['species']}</i></span>", 
         unsafe_allow_html=True
     )
 
