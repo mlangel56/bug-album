@@ -297,7 +297,10 @@ def format_date_str(raw_date):
 def display_bug_details(selected_bug):
     st.markdown(f"### {selected_bug['name']}")
     if selected_bug.get("species"):
-        st.caption(f"*Scientific name: {selected_bug['species']}*")
+        st.markdown(
+        f"<span style='color: #824f21; font-style: italic; font-size: 0.9rem;'>Scientific name: {selected_bug['species']}</span>", 
+        unsafe_allow_html=True
+    )
 
     if selected_bug.get("category"):
         st.write(f"**Category:** {selected_bug['category']}")
