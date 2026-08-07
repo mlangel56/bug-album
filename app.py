@@ -173,7 +173,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # App Header
 st.title("🌿Bugpedia🪲")
-st.caption("A cottagecore collection of local insects, fungi, plants, photos & notes")
+st.caption("A cozy field guide of encountered insects")
 
 # Fetch all bug entries
 response = (
