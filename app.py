@@ -172,7 +172,7 @@ SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # App Header
-st.title("🌿 Bugpedia 🪲")
+st.title("🌿Bugpedia🪲")
 st.caption("A cottagecore collection of local insects, fungi, plants, photos & notes")
 
 # Fetch all bug entries
