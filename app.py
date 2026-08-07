@@ -192,6 +192,30 @@ def get_category_emoji(category_str):
     return "".join(emojis) if emojis else "🪲"
 
 
+# --- SIDEBAR SORTING CONTROLS ---
+st.sidebar.title("📌 Journal Menu")
+
+sort_option = st.sidebar.selectbox(
+    "Sort entries by:",
+    [
+        "Alphabetical (A-Z)",
+        "Date Spotted (Newest First)",
+        "Date Spotted (Oldest First)",
+        "Category"
+    ]
+)
+
+# Apply Sorting Logic to `bugs` list
+if sort_option == "Alphabetical (A-Z)":
+    bugs.sort(key=lambda b: b.get("name", "").lower())
+elif sort_option == "Date Spotted (Newest First)":
+    bugs.sort(key=lambda b: b.get("date_spotted") or "0000-00-00", reverse=True)
+elif sort_option == "Date Spotted (Oldest First)":
+    bugs.sort(key=lambda b: b.get("date_spotted") or "9999-99-99")
+elif sort_option == "Category":
+    bugs.sort(key=lambda b: (b.get("category") or "", b.get("name", "").lower()))
+
+
 # Build sidebar menu choices dynamically with matching category emojis
 nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
 bug_menu_map = {}
@@ -211,8 +235,7 @@ if "pending_nav" in st.session_state and st.session_state.pending_nav in nav_opt
 if "nav_selection" not in st.session_state or st.session_state.nav_selection not in nav_options:
     st.session_state["nav_selection"] = "📖 Table of Contents"
 
-# Navigation Sidebar
-st.sidebar.title("📌 Journal Menu")
+# Navigation Radio Buttons
 selected_option = st.sidebar.radio(
     "Go to:", 
     nav_options, 
