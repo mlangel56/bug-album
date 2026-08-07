@@ -192,25 +192,68 @@ def get_category_emoji(category_str):
     return "".join(emojis) if emojis else "🪲"
 
 
-# --- SIDEBAR NAVIGATION ---
+# --- SIDEBAR CONTROLS & NAVIGATION ---
 st.sidebar.title("📌 Journal Menu")
 
-nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
-bug_menu_map = {}
+# Sidebar Search
+sidebar_search = st.sidebar.text_input(
+    "🔍 Search sidebar:", 
+    placeholder="e.g., Monarch, Beetle...",
+    key="sidebar_search_input"
+).strip().lower()
 
-# Populate full sidebar journal menu
+# Sidebar Sort
+sidebar_sort = st.sidebar.selectbox(
+    "Sort sidebar by:",
+    [
+        "Alphabetical (A-Z)",
+        "Date Spotted (Newest First)",
+        "Date Spotted (Oldest First)",
+        "Category"
+    ],
+    key="sidebar_sort_select"
+)
+
+# Filter sidebar bug list
+sidebar_bugs = list(all_bugs)
+if sidebar_search:
+    sidebar_bugs = [
+        b for b in sidebar_bugs
+        if sidebar_search in b.get("name", "").lower()
+        or sidebar_search in b.get("species", "").lower()
+        or sidebar_search in b.get("category", "").lower()
+    ]
+
+# Sort sidebar bug list
+if sidebar_sort == "Alphabetical (A-Z)":
+    sidebar_bugs.sort(key=lambda b: b.get("name", "").lower())
+elif sidebar_sort == "Date Spotted (Newest First)":
+    sidebar_bugs.sort(key=lambda b: b.get("date_spotted") or "0000-00-00", reverse=True)
+elif sidebar_sort == "Date Spotted (Oldest First)":
+    sidebar_bugs.sort(key=lambda b: b.get("date_spotted") or "9999-99-99")
+elif sidebar_sort == "Category":
+    sidebar_bugs.sort(key=lambda b: (b.get("category") or "", b.get("name", "").lower()))
+
+# Build complete mapping of all entries so navigation won't break
+bug_menu_map = {}
 for bug in all_bugs:
     category_emoji = get_category_emoji(bug.get("category"))
     sidebar_label = f"{category_emoji} {bug['name']}"
-    nav_options.append(sidebar_label)
     bug_menu_map[sidebar_label] = bug
 
+# Populate visible sidebar navigation options
+nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
+for bug in sidebar_bugs:
+    category_emoji = get_category_emoji(bug.get("category"))
+    sidebar_label = f"{category_emoji} {bug['name']}"
+    nav_options.append(sidebar_label)
+
 # Handle pending navigation safely before st.radio is rendered
-if "pending_nav" in st.session_state and st.session_state.pending_nav in nav_options:
+if "pending_nav" in st.session_state and st.session_state.pending_nav in bug_menu_map:
     st.session_state["nav_selection"] = st.session_state.pending_nav
     del st.session_state["pending_nav"]
 
-# Reset navigation if current selection isn't valid
+# Reset navigation if current selection isn't valid in options
 if "nav_selection" not in st.session_state or st.session_state.nav_selection not in nav_options:
     st.session_state["nav_selection"] = "📖 Table of Contents"
 
