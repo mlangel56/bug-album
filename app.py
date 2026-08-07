@@ -105,12 +105,12 @@ st.markdown("""
     .toc-divider {
         border-top: 2px solid #C86D51;
         width: 80%;
-        margin: 0 auto 30px auto;
+        margin: 0 auto 20px auto;
     }
     .toc-container {
         font-family: 'Georgia', serif;
         max-width: 650px;
-        margin: 0 auto;
+        margin: 15px auto 0 auto;
     }
     .toc-row {
         display: flex;
@@ -174,14 +174,14 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.title("🌿Bugpedia🪲")
 st.caption("A cozy field guide of encountered insects")
 
-# Fetch all bug entries
+# Fetch all bug entries from database
 response = (
     supabase.table("bugs")
     .select("*")
     .order("created_at", desc=True)
     .execute()
 )
-bugs = response.data or []
+all_bugs = response.data or []
 
 
 # Helper function to extract emoji from category string
@@ -192,35 +192,14 @@ def get_category_emoji(category_str):
     return "".join(emojis) if emojis else "🪲"
 
 
-# --- SIDEBAR SORTING CONTROLS ---
+# --- SIDEBAR NAVIGATION ---
 st.sidebar.title("📌 Journal Menu")
 
-sort_option = st.sidebar.selectbox(
-    "Sort entries by:",
-    [
-        "Alphabetical (A-Z)",
-        "Date Spotted (Newest First)",
-        "Date Spotted (Oldest First)",
-        "Category"
-    ]
-)
-
-# Apply Sorting Logic to `bugs` list
-if sort_option == "Alphabetical (A-Z)":
-    bugs.sort(key=lambda b: b.get("name", "").lower())
-elif sort_option == "Date Spotted (Newest First)":
-    bugs.sort(key=lambda b: b.get("date_spotted") or "0000-00-00", reverse=True)
-elif sort_option == "Date Spotted (Oldest First)":
-    bugs.sort(key=lambda b: b.get("date_spotted") or "9999-99-99")
-elif sort_option == "Category":
-    bugs.sort(key=lambda b: (b.get("category") or "", b.get("name", "").lower()))
-
-
-# Build sidebar menu choices dynamically with matching category emojis
 nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
 bug_menu_map = {}
 
-for bug in bugs:
+# Populate full sidebar journal menu
+for bug in all_bugs:
     category_emoji = get_category_emoji(bug.get("category"))
     sidebar_label = f"{category_emoji} {bug['name']}"
     nav_options.append(sidebar_label)
@@ -231,7 +210,7 @@ if "pending_nav" in st.session_state and st.session_state.pending_nav in nav_opt
     st.session_state["nav_selection"] = st.session_state.pending_nav
     del st.session_state["pending_nav"]
 
-# Default selection if key doesn't exist yet
+# Reset navigation if current selection isn't valid
 if "nav_selection" not in st.session_state or st.session_state.nav_selection not in nav_options:
     st.session_state["nav_selection"] = "📖 Table of Contents"
 
@@ -373,12 +352,58 @@ if selected_option == "📖 Table of Contents":
     st.markdown('<div class="toc-title">Table of Contents</div>', unsafe_allow_html=True)
     st.markdown('<div class="toc-divider"></div>', unsafe_allow_html=True)
 
-    if not bugs:
-        st.info("No entries added yet! Select '➕ Add New Entry' in the sidebar to make your first entry.")
+    # In-Page Search Bar and Sort Options
+    col_search, col_sort = st.columns([0.6, 0.4])
+
+    with col_search:
+        toc_search = st.text_input(
+            "🔍 Search Journal", 
+            placeholder="Search name, species, category...",
+            key="toc_search_input"
+        ).strip().lower()
+
+    with col_sort:
+        toc_sort = st.selectbox(
+            "Sort entries by",
+            [
+                "Alphabetical (A-Z)",
+                "Date Spotted (Newest First)",
+                "Date Spotted (Oldest First)",
+                "Category"
+            ],
+            key="toc_sort_select"
+        )
+
+    # Filter entries according to search query
+    filtered_bugs = list(all_bugs)
+    if toc_search:
+        filtered_bugs = [
+            b for b in filtered_bugs
+            if toc_search in b.get("name", "").lower()
+            or toc_search in b.get("species", "").lower()
+            or toc_search in b.get("category", "").lower()
+        ]
+
+    # Apply selected sort order
+    if toc_sort == "Alphabetical (A-Z)":
+        filtered_bugs.sort(key=lambda b: b.get("name", "").lower())
+    elif toc_sort == "Date Spotted (Newest First)":
+        filtered_bugs.sort(key=lambda b: b.get("date_spotted") or "0000-00-00", reverse=True)
+    elif toc_sort == "Date Spotted (Oldest First)":
+        filtered_bugs.sort(key=lambda b: b.get("date_spotted") or "9999-99-99")
+    elif toc_sort == "Category":
+        filtered_bugs.sort(key=lambda b: (b.get("category") or "", b.get("name", "").lower()))
+
+    # Render TOC List
+    if not filtered_bugs:
+        if toc_search:
+            st.info(f"🔍 No entries found matching **'{toc_search}'**.")
+        else:
+            st.info("No entries added yet! Select '➕ Add New Entry' in the sidebar to make your first entry.")
     else:
         st.markdown('<div class="toc-container">', unsafe_allow_html=True)
         
-        for bug in bugs:
+        for bug in filtered_bugs:
             bug_name = bug.get("name", "Unnamed Entry")
             formatted_date = format_date_str(bug.get("date_spotted"))
             category_emoji = get_category_emoji(bug.get("category"))
@@ -405,8 +430,25 @@ if selected_option == "📖 Table of Contents":
 elif selected_option == "➕ Add New Entry":
     st.subheader("Add a New Field Entry")
 
+    # Interactive input outside st.form triggers instant rerun & live duplicate checking
+    name = st.text_input(
+        "Common Name", 
+        placeholder="e.g., Monarch Butterfly, Amanita Muscaria",
+        key="new_bug_name_input"
+    )
+
+    # Active duplicate check against all master entries
+    if name.strip():
+        duplicate_matches = [
+            b for b in all_bugs 
+            if b.get("name", "").strip().lower() == name.strip().lower()
+        ]
+        if duplicate_matches:
+            dup = duplicate_matches[0]
+            dup_date = format_date_str(dup.get("date_spotted"))
+            st.warning(f"⚠️ **Possible Duplicate:** You already logged **'{dup['name']}'** on {dup_date}!")
+
     with st.form("bug_entry_form", clear_on_submit=True):
-        name = st.text_input("Common Name", placeholder="e.g., Monarch Butterfly, Amanita Muscaria")
         species = st.text_input("Scientific Name (Optional)", placeholder="e.g., Danaus plexippus")
         category = st.selectbox("Category", CATEGORY_OPTIONS)
 
