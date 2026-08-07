@@ -183,12 +183,22 @@ response = (
 )
 bugs = response.data or []
 
-# Build sidebar menu choices dynamically
+
+# Helper function to extract emoji from category string
+def get_category_emoji(category_str):
+    if not category_str:
+        return "🪲"
+    emojis = [char for char in category_str if not char.isalnum() and not char.isspace()]
+    return "".join(emojis) if emojis else "🪲"
+
+
+# Build sidebar menu choices dynamically with matching category emojis
 nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
 bug_menu_map = {}
 
 for bug in bugs:
-    sidebar_label = f"🪲 {bug['name']}"
+    category_emoji = get_category_emoji(bug.get("category"))
+    sidebar_label = f"{category_emoji} {bug['name']}"
     nav_options.append(sidebar_label)
     bug_menu_map[sidebar_label] = bug
 
@@ -348,7 +358,8 @@ if selected_option == "📖 Table of Contents":
         for bug in bugs:
             bug_name = bug.get("name", "Unnamed Entry")
             formatted_date = format_date_str(bug.get("date_spotted"))
-            sidebar_label = f"🪲 {bug_name}"
+            category_emoji = get_category_emoji(bug.get("category"))
+            sidebar_label = f"{category_emoji} {bug_name}"
 
             col1, col2 = st.columns([0.45, 0.55], vertical_alignment="bottom")
 
