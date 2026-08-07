@@ -157,13 +157,12 @@ st.markdown("""
 
 # Master list of category options
 CATEGORY_OPTIONS = [
-    "Butterfly/Moth 🦋",
-    "Beetle 🐞",
-    "Bee/Wasp 🐝",
-    "Spider 🕷️",
-    "Fungi 🍄",
-    "Plants 🪴",
-    "Other 🌿",
+    "Coleoptera 🪲",   # Beetles
+    "Lepidoptera 🦋",  # Butterflies & Moths
+    "Hymenoptera 🐜🐝", # Ants, Bees & Wasps
+    "Diptera 🪰",      # True Flies
+    "Hemiptera 🪳",    # True Bugs
+    "Orthoptera 🦗",   # Grasshoppers & Crickets
 ]
 
 # Initialize Supabase Client using Secrets
