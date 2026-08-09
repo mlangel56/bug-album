@@ -157,6 +157,13 @@ st.markdown("""
         color: #C86D51 !important;
         text-decoration: underline !important;
     }
+
+    /* Italicized scientific name inside TOC buttons */
+    div[data-testid="stColumn"] button[kind="tertiary"] em {
+        color: #6a3d14 !important;
+        font-style: italic !important;
+        font-weight: 400 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -456,14 +463,22 @@ if selected_option == "📖 Table of Contents":
         
         for bug in filtered_bugs:
             bug_name = bug.get("name", "Unnamed Entry")
+            bug_species = bug.get("species", "").strip() if bug.get("species") else ""
             formatted_date = format_date_str(bug.get("date_spotted"))
             category_emoji = get_category_emoji(bug.get("category"))
             sidebar_label = f"{category_emoji} {bug_name}"
 
-            col1, col2 = st.columns([0.45, 0.55], vertical_alignment="bottom")
+            # Format button label with optional italicized scientific name
+            if bug_species:
+                display_label = f"{bug_name} *({bug_species})*"
+            else:
+                display_label = bug_name
+
+            # Expanded column ratio from [0.45, 0.55] to [0.65, 0.35] for wider labels
+            col1, col2 = st.columns([0.65, 0.35], vertical_alignment="bottom")
 
             with col1:
-                if st.button(bug_name, key=f"toc_link_{bug['id']}", type="tertiary"):
+                if st.button(display_label, key=f"toc_link_{bug['id']}", type="tertiary"):
                     st.session_state.pending_nav = sidebar_label
                     st.rerun()
 
