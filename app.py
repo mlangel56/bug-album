@@ -198,18 +198,18 @@ def get_category_emoji(category_str):
 
 
 # --- SIDEBAR CONTROLS & NAVIGATION ---
-st.sidebar.title("📌 Journal Menu")
+st.sidebar.title("🌿 Field Guide")
 
 # Sidebar Search
 sidebar_search = st.sidebar.text_input(
-    "🔍 Search sidebar:", 
+    "🔍 Find a bug:", 
     placeholder="e.g., Monarch, Beetle...",
     key="sidebar_search_input"
 ).strip().lower()
 
 # Sidebar Sort
 sidebar_sort = st.sidebar.selectbox(
-    "Sort sidebar by:",
+    "Sort by:",
     [
         "Alphabetical (A-Z)",
         "Date Spotted (Newest First)",
@@ -247,7 +247,7 @@ for bug in all_bugs:
     bug_menu_map[sidebar_label] = bug
 
 # Populate visible sidebar navigation options
-nav_options = ["📖 Table of Contents", "➕ Add New Entry"]
+nav_options = ["📖 Table of Contents", "✍🏻 Add New Entry"]
 for bug in sidebar_bugs:
     category_emoji = get_category_emoji(bug.get("category"))
     sidebar_label = f"{category_emoji} {bug['name']}"
