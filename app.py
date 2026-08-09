@@ -48,7 +48,7 @@ st.markdown("""
     <style>
     /* SIDEBAR BACKGROUND COLOR */
     [data-testid="stSidebar"] {
-        background-color: #C5D9B2 !important;
+        background-color: #D8EDCA !important;
     }
 
     /* HIDE SIDEBAR RADIO BUTTON CIRCLES COMPLETELY */
