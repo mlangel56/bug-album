@@ -77,7 +77,7 @@ st.markdown("""
     }
 
     .bug-card {
-        background-color: #B3CC97;
+        background-color: #000000;
         padding: 20px;
         border-radius: 16px;
         border: 1px solid #C86D51;
