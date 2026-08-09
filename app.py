@@ -43,7 +43,7 @@ st.html("""
     </script>
 """)
 
-# Custom Cottagecore / Botanical & Bookish TOC CSS Styling
+# Custom Cottagecore / Botanical & Bookish Styling
 st.markdown("""
     <style>
     /* HIDE SIDEBAR RADIO BUTTON CIRCLES COMPLETELY */
@@ -74,15 +74,6 @@ st.markdown("""
     div[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
         background-color: rgba(200, 109, 81, 0.2) !important;
         font-weight: 600 !important;
-    }
-
-    /* Style Streamlit bordered containers as custom bug cards */
-    div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #B3CC97 !important;
-        padding: 20px !important;
-        border-radius: 16px !important;
-        border: 1px solid #C86D51 !important;
-        margin-bottom: 25px !important;
     }
 
     img {
@@ -194,6 +185,163 @@ def get_category_emoji(category_str):
     return "".join(emojis) if emojis else "🪲"
 
 
+# Helper function to extract image list
+def get_image_list(bug_data):
+    raw_images = bug_data.get("image_url") or []
+    if isinstance(raw_images, str):
+        try:
+            parsed = json.loads(raw_images)
+            return parsed if isinstance(parsed, list) else [raw_images]
+        except Exception:
+            return [raw_images] if raw_images else []
+    elif isinstance(raw_images, list):
+        return raw_images
+    return []
+
+
+# Helper function to format date consistently as "July 3, 2026"
+def format_date_str(raw_date):
+    if not raw_date:
+        return "Unknown Date"
+    try:
+        if isinstance(raw_date, str):
+            parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
+        else:
+            parsed_date = raw_date
+        return parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
+    except Exception:
+        return str(raw_date)
+
+
+# Helper function to display entry details & edit form
+def display_bug_details(selected_bug):
+    formatted_date = format_date_str(selected_bug.get("date_spotted"))
+
+    # Build optional HTML fields
+    species_html = (
+        f"<div style='color: #6a3d14; font-style: italic; font-size: 0.95rem; margin-bottom: 10px;'>"
+        f"{selected_bug['species']}</div>"
+        if selected_bug.get("species")
+        else ""
+    )
+    category_html = (
+        f"<div><b>Category:</b> {selected_bug['category']}</div>"
+        if selected_bug.get("category")
+        else ""
+    )
+    location_html = (
+        f"<div><b>📍 Location:</b> {selected_bug['location']}</div>"
+        if selected_bug.get("location")
+        else ""
+    )
+    date_html = (
+        f"<div><b>Date First Spotted:</b> {formatted_date}</div>"
+        if selected_bug.get("date_spotted")
+        else ""
+    )
+    notes_text = selected_bug.get("notes") or "No notes added."
+
+    # Self-contained HTML card (guarantees #B3CC97 background rendering)
+    st.markdown(
+        f"""
+        <div style="background-color: #B3CC97; padding: 20px; border-radius: 16px; border: 1px solid #C86D51; margin-bottom: 20px;">
+            <h3 style="color: #3D3A37; margin-top: 0; margin-bottom: 4px;">{selected_bug['name']}</h3>
+            {species_html}
+            <div style="color: #3D3A37; font-size: 0.95rem; line-height: 1.6; margin-bottom: 12px;">
+                {category_html}
+                {location_html}
+                {date_html}
+            </div>
+            <h4 style="color: #3D3A37; margin-bottom: 4px; margin-top: 12px;">📝 Field Notes</h4>
+            <div style="color: #3D3A37; font-size: 0.95rem;">{notes_text}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Photos section
+    image_list = get_image_list(selected_bug)
+    if image_list:
+        st.markdown("#### 📷 Photos")
+        if len(image_list) == 1:
+            st.image(image_list[0], use_container_width=True)
+        else:
+            cols = st.columns(min(len(image_list), 3))
+            for i, img_url in enumerate(image_list):
+                with cols[i % 3]:
+                    st.image(img_url, use_container_width=True)
+
+    st.divider()
+
+    # Edit section
+    with st.expander("✏️ Edit This Entry"):
+        with st.form(f"edit_bug_form_{selected_bug['id']}"):
+            edit_name = st.text_input("Common Name", value=selected_bug.get("name", ""))
+            edit_species = st.text_input("Scientific Name", value=selected_bug.get("species", ""))
+
+            current_cat = selected_bug.get("category", CATEGORY_OPTIONS[0])
+            cat_index = CATEGORY_OPTIONS.index(current_cat) if current_cat in CATEGORY_OPTIONS else 0
+            edit_category = st.selectbox("Category", CATEGORY_OPTIONS, index=cat_index)
+
+            edit_location = st.text_input("Location 📍", value=selected_bug.get("location", ""))
+
+            existing_date = selected_bug.get("date_spotted")
+            try:
+                default_date = (
+                    datetime.datetime.strptime(existing_date, "%Y-%m-%d").date()
+                    if existing_date
+                    else datetime.date.today()
+                )
+            except Exception:
+                default_date = datetime.date.today()
+
+            edit_date = st.date_input("Date First Spotted 📅", value=default_date)
+
+            new_photos = st.file_uploader(
+                "Add Additional Photos (Optional)",
+                type=["jpg", "jpeg", "png"],
+                accept_multiple_files=True,
+            )
+
+            edit_notes = st.text_area("Field Notes", value=selected_bug.get("notes", ""))
+
+            update_submitted = st.form_submit_button("💾 Save Changes")
+
+            if update_submitted:
+                try:
+                    existing_urls = get_image_list(selected_bug)
+
+                    if new_photos:
+                        for photo in new_photos:
+                            file_bytes = photo.read()
+                            clean_filename = edit_name.lower().replace(" ", "_")
+                            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+                            file_path = f"public/{clean_filename}_{timestamp}.jpg"
+
+                            supabase.storage.from_("bug-photos").upload(
+                                path=file_path,
+                                file=file_bytes,
+                                file_options={"content-type": photo.type, "upsert": "true"},
+                            )
+                            new_url = supabase.storage.from_("bug-photos").get_public_url(file_path)
+                            existing_urls.append(new_url)
+
+                    supabase.table("bugs").update({
+                        "name": edit_name,
+                        "species": edit_species,
+                        "category": edit_category,
+                        "location": edit_location,
+                        "date_spotted": str(edit_date),
+                        "image_url": existing_urls,
+                        "notes": edit_notes,
+                    }).eq("id", selected_bug["id"]).execute()
+
+                    st.success("Entry updated successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error updating entry: {e}")
+
+
 # --- SIDEBAR CONTROLS & NAVIGATION ---
 st.sidebar.title("📌 Journal Menu")
 
@@ -265,135 +413,6 @@ selected_option = st.sidebar.radio(
     nav_options, 
     key="nav_selection"
 )
-
-
-# Helper function to extract image list
-def get_image_list(bug_data):
-    raw_images = bug_data.get("image_url") or []
-    if isinstance(raw_images, str):
-        try:
-            parsed = json.loads(raw_images)
-            return parsed if isinstance(parsed, list) else [raw_images]
-        except Exception:
-            return [raw_images] if raw_images else []
-    elif isinstance(raw_images, list):
-        return raw_images
-    return []
-
-
-# Helper function to format date consistently as "July 3, 2026"
-def format_date_str(raw_date):
-    if not raw_date:
-        return "Unknown Date"
-    try:
-        if isinstance(raw_date, str):
-            parsed_date = datetime.datetime.strptime(raw_date, "%Y-%m-%d").date()
-        else:
-            parsed_date = raw_date
-        return parsed_date.strftime("%B %d, %Y").replace(" 0", " ")
-    except Exception:
-        return str(raw_date)
-
-
-# Helper function to display entry details & edit form
-def display_bug_details(selected_bug):
-    with st.container(border=True):
-        st.markdown(f"### {selected_bug['name']}")
-        if selected_bug.get("species"):
-            st.markdown(
-                f"<span style='color: #6a3d14; font-style: italic; font-size: 0.9rem;'>{selected_bug['species']}</span>", 
-                unsafe_allow_html=True
-            )
-
-        if selected_bug.get("category"):
-            st.write(f"**Category:** {selected_bug['category']}")
-
-        if selected_bug.get("location"):
-            st.write(f"**📍 Location:** {selected_bug['location']}")
-
-        if selected_bug.get("date_spotted"):
-            formatted_date = format_date_str(selected_bug["date_spotted"])
-            st.write(f"**Date First Spotted:** {formatted_date}")
-
-        image_list = get_image_list(selected_bug)
-        if image_list:
-            st.markdown("#### 📷 Photos")
-            if len(image_list) == 1:
-                st.image(image_list[0], use_container_width=True)
-            else:
-                cols = st.columns(min(len(image_list), 3))
-                for i, img_url in enumerate(image_list):
-                    with cols[i % 3]:
-                        st.image(img_url, use_container_width=True)
-
-        st.markdown("#### 📝 Field Notes")
-        st.write(selected_bug["notes"] if selected_bug.get("notes") else "No notes added.")
-
-    st.divider()
-
-    # Edit section
-    with st.expander("✏️ Edit This Entry"):
-        with st.form(f"edit_bug_form_{selected_bug['id']}"):
-            edit_name = st.text_input("Common Name", value=selected_bug.get("name", ""))
-            edit_species = st.text_input("Scientific Name", value=selected_bug.get("species", ""))
-
-            current_cat = selected_bug.get("category", CATEGORY_OPTIONS[0])
-            cat_index = CATEGORY_OPTIONS.index(current_cat) if current_cat in CATEGORY_OPTIONS else 0
-            edit_category = st.selectbox("Category", CATEGORY_OPTIONS, index=cat_index)
-
-            edit_location = st.text_input("Location 📍", value=selected_bug.get("location", ""))
-
-            existing_date = selected_bug.get("date_spotted")
-            try:
-                default_date = datetime.datetime.strptime(existing_date, "%Y-%m-%d").date() if existing_date else datetime.date.today()
-            except Exception:
-                default_date = datetime.date.today()
-
-            edit_date = st.date_input("Date First Spotted 📅", value=default_date)
-            
-            new_photos = st.file_uploader(
-                "Add Additional Photos (Optional)", 
-                type=["jpg", "jpeg", "png"], 
-                accept_multiple_files=True
-            )
-            
-            edit_notes = st.text_area("Field Notes", value=selected_bug.get("notes", ""))
-
-            update_submitted = st.form_submit_button("💾 Save Changes")
-
-            if update_submitted:
-                try:
-                    existing_urls = get_image_list(selected_bug)
-
-                    if new_photos:
-                        for photo in new_photos:
-                            file_bytes = photo.read()
-                            clean_filename = edit_name.lower().replace(" ", "_")
-                            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
-                            file_path = f"public/{clean_filename}_{timestamp}.jpg"
-
-                            supabase.storage.from_("bug-photos").upload(
-                                path=file_path,
-                                file=file_bytes,
-                                file_options={"content-type": photo.type, "upsert": "true"},
-                            )
-                            new_url = supabase.storage.from_("bug-photos").get_public_url(file_path)
-                            existing_urls.append(new_url)
-
-                    supabase.table("bugs").update({
-                        "name": edit_name,
-                        "species": edit_species,
-                        "category": edit_category,
-                        "location": edit_location,
-                        "date_spotted": str(edit_date),
-                        "image_url": existing_urls,
-                        "notes": edit_notes,
-                    }).eq("id", selected_bug["id"]).execute()
-
-                    st.success("Entry updated successfully!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error updating entry: {e}")
 
 
 # ---------------- PAGE 1: TABLE OF CONTENTS (DEFAULT HOMEPAGE) ----------------
