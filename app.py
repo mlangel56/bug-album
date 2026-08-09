@@ -46,6 +46,11 @@ st.html("""
 # Custom Cottagecore / Botanical & Bookish TOC CSS Styling
 st.markdown("""
     <style>
+    /* SIDEBAR BACKGROUND COLOR */
+    [data-testid="stSidebar"] {
+        background-color: #B3CC97 !important;
+    }
+
     /* HIDE SIDEBAR RADIO BUTTON CIRCLES COMPLETELY */
     div[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
     div[data-testid="stSidebar"] div[role="radiogroup"] label[data-baseweb="radio"] > div:first-child,
@@ -298,9 +303,9 @@ def display_bug_details(selected_bug):
     st.markdown(f"### {selected_bug['name']}")
     if selected_bug.get("species"):
         st.markdown(
-        f"<span style='color: #6a3d14; font-style: italic; font-size: 0.9rem;'>{selected_bug['species']}</span>", 
-        unsafe_allow_html=True
-    )
+            f"<span style='color: #6a3d14; font-style: italic; font-size: 0.9rem;'>{selected_bug['species']}</span>", 
+            unsafe_allow_html=True
+        )
 
     if selected_bug.get("category"):
         st.write(f"**Category:** {selected_bug['category']}")
