@@ -76,13 +76,15 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    .bug-card {
+    /* Style Streamlit bordered containers as custom bug cards */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #B3CC97 !important;
-        padding: 20px;
-        border-radius: 16px;
-        border: 1px solid #C86D51;
-        margin-bottom: 25px;
+        padding: 20px !important;
+        border-radius: 16px !important;
+        border: 1px solid #C86D51 !important;
+        margin-bottom: 25px !important;
     }
+
     img {
         border-radius: 14px !important;
     }
@@ -295,36 +297,37 @@ def format_date_str(raw_date):
 
 # Helper function to display entry details & edit form
 def display_bug_details(selected_bug):
-    st.markdown(f"### {selected_bug['name']}")
-    if selected_bug.get("species"):
-        st.markdown(
-        f"<span style='color: #6a3d14; font-style: italic; font-size: 0.9rem;'>{selected_bug['species']}</span>", 
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+        st.markdown(f"### {selected_bug['name']}")
+        if selected_bug.get("species"):
+            st.markdown(
+                f"<span style='color: #6a3d14; font-style: italic; font-size: 0.9rem;'>{selected_bug['species']}</span>", 
+                unsafe_allow_html=True
+            )
 
-    if selected_bug.get("category"):
-        st.write(f"**Category:** {selected_bug['category']}")
+        if selected_bug.get("category"):
+            st.write(f"**Category:** {selected_bug['category']}")
 
-    if selected_bug.get("location"):
-        st.write(f"**📍 Location:** {selected_bug['location']}")
+        if selected_bug.get("location"):
+            st.write(f"**📍 Location:** {selected_bug['location']}")
 
-    if selected_bug.get("date_spotted"):
-        formatted_date = format_date_str(selected_bug["date_spotted"])
-        st.write(f"**Date First Spotted:** {formatted_date}")
+        if selected_bug.get("date_spotted"):
+            formatted_date = format_date_str(selected_bug["date_spotted"])
+            st.write(f"**Date First Spotted:** {formatted_date}")
 
-    image_list = get_image_list(selected_bug)
-    if image_list:
-        st.markdown("#### 📷 Photos")
-        if len(image_list) == 1:
-            st.image(image_list[0], use_container_width=True)
-        else:
-            cols = st.columns(min(len(image_list), 3))
-            for i, img_url in enumerate(image_list):
-                with cols[i % 3]:
-                    st.image(img_url, use_container_width=True)
+        image_list = get_image_list(selected_bug)
+        if image_list:
+            st.markdown("#### 📷 Photos")
+            if len(image_list) == 1:
+                st.image(image_list[0], use_container_width=True)
+            else:
+                cols = st.columns(min(len(image_list), 3))
+                for i, img_url in enumerate(image_list):
+                    with cols[i % 3]:
+                        st.image(img_url, use_container_width=True)
 
-    st.markdown("#### 📝 Field Notes")
-    st.write(selected_bug["notes"] if selected_bug.get("notes") else "No notes added.")
+        st.markdown("#### 📝 Field Notes")
+        st.write(selected_bug["notes"] if selected_bug.get("notes") else "No notes added.")
 
     st.divider()
 
